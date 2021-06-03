@@ -76,15 +76,19 @@ namespace AutoFixtureDemo
             var mockLogger = new Mock<ILogger>();
 
             var mockCharacterRepository = new Mock<ICharacterRepository>();
-            mockCharacterRepository.Setup(cr => cr.GetByIdAsync(characterId)).ReturnsAsync(expected);
+            mockCharacterRepository
+                .Setup(cr => cr.GetByIdAsync(characterId))
+                .ReturnsAsync(expected);
 
             var mockEmailService = new Mock<IEmailService>();
 
             var sut = new SimpsonService(
                 mockLogger.Object, mockCharacterRepository.Object, mockEmailService.Object);
 
-            // Act & Assert
+            // Act
             await sut.EmailCharacterByIdAsync(characterId, subject, message);
+            
+            // Assert
             mockLogger.Verify(l =>
                 l.LogInformation($"Fetching character with id {characterId}"), Times.Once());
         }

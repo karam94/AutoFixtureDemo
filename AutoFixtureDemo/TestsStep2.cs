@@ -29,7 +29,8 @@ namespace AutoFixtureDemo
         }
 
         [Theory, AutoData]
-        public async void GivenSimpsonService_WhenGettingById_ThenLogsCorrectInfo(int characterId)
+        public async void GivenSimpsonService_WhenGettingById_ThenLogsCorrectInfo(
+            int characterId)
         {
             // Arrange
             var fixture = new Fixture();
@@ -42,10 +43,13 @@ namespace AutoFixtureDemo
             mockLogger.Verify(l =>
                 l.LogInformation($"Fetching character with id {characterId}"), Times.Once());
         }
-        
+
         [Theory, AutoData]
         public async void GivenSimpsonService_WhenEmailingById_ThenEmailsCharacter(
-            int characterId, string subject, string message, Character expected)
+            int characterId,
+            string subject,
+            string message,
+            Character expected)
         {
             // Arrange
             var fixture = new Fixture();
@@ -62,10 +66,13 @@ namespace AutoFixtureDemo
             // Assert
             mockEmailService.Verify(m => m.SendEmailAsync(expected.Email, subject, message), Times.Once);
         }
-        
+
         [Theory, AutoData]
         public async void GivenSimpsonService_WhenEmailingById_ThenLogsCorrectInfo(
-            int characterId, string subject, string message, Character expected)
+            int characterId,
+            string subject,
+            string message,
+            Character expected)
         {
             // Arrange
             var fixture = new Fixture();

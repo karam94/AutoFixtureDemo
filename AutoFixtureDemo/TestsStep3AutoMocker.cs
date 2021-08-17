@@ -1,32 +1,36 @@
 ﻿using AutoFixture.Xunit2;
 using Moq;
+using Moq.AutoMock;
+using Shouldly;
 using Xunit;
 
 namespace AutoFixtureDemo
 {
-    public class TestsStep1
+    public class TestsStep3AutoMocker
     {
+        private readonly AutoMocker _mocker;
+        private readonly SimpsonService _sut;
+
+        public TestsStep3AutoMocker()
+        {
+            _mocker = new AutoMocker();
+            _sut = _mocker.CreateInstance<SimpsonService>();
+        }
+
         [Theory, AutoData]
         public async void GivenSimpsonService_WhenGettingById_ThenReturnsCorrectCharacter(
             int characterId,
             Character expected)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger>();
-
-            var mockCharacterRepository = new Mock<ICharacterRepository>();
+            var mockCharacterRepository = _mocker.GetMock<ICharacterRepository>();
             mockCharacterRepository.Setup(cr => cr.GetByIdAsync(characterId)).ReturnsAsync(expected);
 
-            var mockEmailService = new Mock<IEmailService>();
-
-            var sut = new SimpsonService(
-                mockLogger.Object, mockCharacterRepository.Object, mockEmailService.Object);
-
             // Act
-            var result = await sut.GetCharacterByIdAsync(characterId);
+            var result = await _sut.GetCharacterByIdAsync(characterId);
 
             // Assert
-            Assert.Equal(expected, result);
+            result.ShouldBe(expected);
         }
 
         [Theory, AutoData]
@@ -34,15 +38,12 @@ namespace AutoFixtureDemo
             int characterId)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger>();
-            var mockCharacterRepository = new Mock<ICharacterRepository>();
-            var mockEmailService = new Mock<IEmailService>();
+            var mockLogger = _mocker.GetMock<ILogger>();
 
-            var sut = new SimpsonService(
-                mockLogger.Object, mockCharacterRepository.Object, mockEmailService.Object);
+            // Act 
+            await _sut.GetCharacterByIdAsync(characterId);
 
-            // Act & Assert
-            await sut.GetCharacterByIdAsync(characterId);
+            // Assert
             mockLogger.Verify(l =>
                 l.LogInformation($"Fetching character with id {characterId}"), Times.Once());
         }
@@ -55,18 +56,13 @@ namespace AutoFixtureDemo
             Character expected)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger>();
+            var mockCharacterRepository = _mocker.GetMock<ICharacterRepository>();
+            var mockEmailService = _mocker.GetMock<IEmailService>();
 
-            var mockCharacterRepository = new Mock<ICharacterRepository>();
             mockCharacterRepository.Setup(cr => cr.GetByIdAsync(characterId)).ReturnsAsync(expected);
 
-            var mockEmailService = new Mock<IEmailService>();
-
-            var sut = new SimpsonService(
-                mockLogger.Object, mockCharacterRepository.Object, mockEmailService.Object);
-
             // Act
-            await sut.EmailCharacterByIdAsync(characterId, subject, message);
+            await _sut.EmailCharacterByIdAsync(characterId, subject, message);
 
             // Assert
             mockEmailService.Verify(m => m.SendEmailAsync(expected.Email, subject, message), Times.Once);
@@ -80,20 +76,15 @@ namespace AutoFixtureDemo
             Character expected)
         {
             // Arrange
-            var mockLogger = new Mock<ILogger>();
+            var mockCharacterRepository = _mocker.GetMock<ICharacterRepository>();
+            var mockLogger = _mocker.GetMock<ILogger>();
 
-            var mockCharacterRepository = new Mock<ICharacterRepository>();
             mockCharacterRepository
                 .Setup(cr => cr.GetByIdAsync(characterId))
                 .ReturnsAsync(expected);
 
-            var mockEmailService = new Mock<IEmailService>();
-
-            var sut = new SimpsonService(
-                mockLogger.Object, mockCharacterRepository.Object, mockEmailService.Object);
-
             // Act
-            await sut.EmailCharacterByIdAsync(characterId, subject, message);
+            await _sut.EmailCharacterByIdAsync(characterId, subject, message);
 
             // Assert
             mockLogger.Verify(l =>
